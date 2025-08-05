@@ -76,4 +76,58 @@ class DoublyLinkedList<T> {
       curr = curr.prev;
     }
   }
+  reverse() {
+    let temp = this.head;
+
+    while (temp) {
+      // Swapping prev and next
+      const next = temp.next;
+      temp.next = temp.prev;
+      temp.prev = next;
+
+      // Move to next node (which was originally next)
+      temp = next;
+    }
+
+    // Swap head and tail
+    const oldHead = this.head;
+    this.head = this.tail;
+    this.tail = oldHead;
+  }
+  recursiveTraversal(node: DNode<T> | null = this.head) {
+    if (node) {
+      console.log(node.value);
+      if (node.next == null) return;
+      this.recursiveTraversal(node.next);
+    }
+  }
+
+  hasLoop(head: DNode<T> | null = this.head): boolean {
+    let slow = head;
+    let fast = head;
+
+    while (fast && fast.next && slow) {
+      slow = slow.next!;
+      fast = fast.next.next!;
+      if (slow === fast) return true;
+    }
+
+    return false;
+  }
 }
+
+const dll = new DoublyLinkedList();
+dll.insertAtEnd(10);
+dll.insertAtEnd(20);
+dll.insertAtEnd(30);
+dll.printForward();
+dll.deleteAtStart();
+dll.printBackward();
+console.log("recursive traversal");
+dll.recursiveTraversal();
+dll.insertAtEnd(40);
+dll.insertAtEnd(50);
+dll.printForward();
+console.log("reversing");
+dll.reverse();
+dll.printForward();

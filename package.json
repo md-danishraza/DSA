@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node typescript/dist/LL/singlyLL.js"
+    "start":"tsc && node typescript/dist/LL/doublyLL.js"
   },
   "keywords": [],
   "author": "",

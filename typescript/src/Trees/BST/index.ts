@@ -55,4 +55,24 @@ class BST {
       return this._searchRecursive(current.right, value);
     }
   }
+
+  // inorder is sorted
+  inOrder(node: BstNode | null = this.root, arr: number[] = []): number[] {
+    if (node) {
+      this.inOrder(node.left, arr);
+      arr.push(node.value);
+      this.inOrder(node.right, arr);
+    }
+    return arr;
+  }
 }
+
+const myBst = new BST();
+myBst.insert(10);
+myBst.insert(20);
+myBst.insert(5);
+myBst.insert(30);
+myBst.insert(25);
+console.log(myBst.root?.value);
+console.log(myBst.search(25));
+console.log(myBst.inOrder());

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node typescript/dist/Hashmaps/index.js"
+    "start":"tsc && node typescript/dist/Recursion/index.js"
+    
   },
   "keywords": [],
   "author": "",

@@ -54,6 +54,38 @@ function subseqSumK(
 
 // printing the subsequences whose sum is sum
 // just print one case
+
+// with time complexity - 2 the power n
+// function subseqSumK(
+//   arr: number[],
+//   k: number,
+//   currentArr: number[] = [],
+//   i: number = 0,
+//   currentSum: number = 0
+// ) {
+//   const n = arr.length;
+
+//   // base case
+//   if (i === n) {
+//     if (currentSum === k) {
+//       console.log(currentArr);
+//     }
+//     return;
+//   }
+
+//   // include arr[i]
+//   currentArr.push(arr[i]);
+//   subseqSumK(arr, k, currentArr, i + 1, currentSum + arr[i]);
+//   currentArr.pop();
+
+//   // exclude arr[i]
+//   subseqSumK(arr, k, currentArr, i + 1, currentSum);
+// }
+
+// const nums = [1, 2, 3, 4];
+// console.log("All subsequences with sum = 4:");
+// subseqSumK(nums, 4);
+
 function subseqSumKisSum(
   arr: number[],
   k: number,
@@ -83,5 +115,62 @@ function subseqSumKisSum(
   }
 }
 
-const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-subseqSumKisSum(nums, 10);
+// const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// subseqSumKisSum(nums, 10);
+
+// count number of subsequence whose sum is k
+function subseqSumKisSumCount(
+  arr: number[],
+  k: number,
+  currentArr: number[] = [],
+  i: number = 0
+): number {
+  // base case
+  const n = arr.length;
+  if (i === n) {
+    const sum = currentArr.reduce((prev, curr) => prev + curr, 0);
+    if (sum === k) {
+      return 1;
+    }
+    return 0;
+  }
+
+  currentArr.push(arr[i]);
+  // call left tree
+  const left = subseqSumKisSumCount(arr, k, currentArr, i + 1);
+  // remove current index for other right tree
+  currentArr.pop();
+  const right = subseqSumKisSumCount(arr, k, currentArr, i + 1);
+
+  return right + left;
+}
+
+const nums = [1, 2, 3, 4];
+console.log(subseqSumKisSumCount(nums, 4));
+
+// time complexity of 2 the power n
+// function subseqSumKisSumCount(
+//   arr: number[],
+//   k: number,
+//   i: number = 0,
+//   currentSum: number = 0
+// ): number {
+//   const n = arr.length;
+
+//   // base case
+//   if (i === n) {
+//     return currentSum === k ? 1 : 0;
+//   }
+
+//   // include arr[i]
+//   const left = subseqSumKisSumCount(arr, k, i + 1, currentSum + arr[i]);
+
+//   // exclude arr[i]
+//   const right = subseqSumKisSumCount(arr, k, i + 1, currentSum);
+
+//   return left + right;
+// }
+
+// const nums = [1, 2, 3, 4];
+// console.log("Count of subsequences with sum = 4:");
+// console.log(subseqSumKisSumCount(nums, 4));

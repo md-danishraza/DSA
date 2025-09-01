@@ -24,8 +24,8 @@ function countSort(arr: number[]) {
     console.log("Sorted array:", sortedArr)
 }
 
-const nums = [3, 3, 3, 2, 2, 1]
-countSort(nums)
+// const nums = [3, 3, 3, 2, 2, 1]
+// countSort(nums)
 
 
 function countSort2(arr: number[]): number[] {

@@ -39,4 +39,40 @@ function permutaionRec(
 }
 
 const nums = [1, 2, 3];
+const nums2 = [3, 1, 2];
 printAllPermutation(nums);
+printAllPermutation2(nums2);
+
+// method 2 without any map array
+
+function printAllPermutation2(arr: number[]) {
+  if (!arr.length) throw new Error("array can't be empty!!");
+
+  const ansArr: number[][] = [];
+  permutaionRec2(arr, ansArr, 0);
+
+  console.log(ansArr);
+}
+
+function permutaionRec2(
+  permArr: number[],
+  ansArr: number[][] = [],
+  i: number = 0
+) {
+  const n = permArr.length;
+
+  if (i === n) {
+    ansArr.push([...permArr]);
+    return;
+  }
+
+  // loop from i to n
+  for (let j = i; j < n; j++) {
+    // swap it with i
+    [permArr[i], permArr[j]] = [permArr[j], permArr[i]];
+    // then call recursion
+    permutaionRec2(permArr, ansArr, i + 1);
+    // reswap for next loop
+    [permArr[i], permArr[j]] = [permArr[j], permArr[i]];
+  }
+}

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node typescript/dist/Recursion/ratInAMaze.js"
+    "start":"tsc && node typescript/dist/Recursion/kThPermutation.js"
     
   },
   "keywords": [],

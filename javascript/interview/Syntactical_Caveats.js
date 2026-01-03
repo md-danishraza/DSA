@@ -102,4 +102,112 @@ function removeDuplicates(arr) {
 function isAnagram(str1, str2) {
   return str1.split("").sort().join("") === str2.split("").sort().join("");
 }
-console.log(isAnagram("danish", "nishad"));
+// console.log(isAnagram("danish", "nishad"));
+
+// Q9. create a private variable using a JavaScript function?
+function privateVar() {
+  // private var
+  let count = 0;
+  return {
+    getCount: () => {
+      return count;
+    },
+    increment: () => {
+      return (count += 1);
+    },
+  };
+}
+const count = privateVar();
+// console.log(count.increment());
+// console.log(count.getCount());
+
+// Q10. Write a function that takes an obj and a key, and returns the value of that key.
+function getValue(obj, key) {
+  if (typeof obj == "object" && obj) {
+    if (obj[key]) {
+      return obj[key];
+    } else {
+      return "no value exist";
+    }
+  }
+}
+
+console.log(getValue({ name: "bob" }, "name"));
+
+// Q11. Copying Objects
+function copyObjectDeep(obj) {
+  // shallow copy
+  // - Object.assign({},obj);
+  // - {...onj}
+
+  // deep copy
+  //  - structuredClone(obj)
+  //  - JSON.parse(JSON.stringify(obj));
+
+  // using recursion
+  const copied = deepCopyRec(obj);
+  console.log(copied);
+}
+function deepCopyRec(obj) {
+  // base case
+  // if primitive then return
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+  // if obj is array
+  if (Array.isArray(obj)) {
+    // recurively iterate each items
+    return obj.map(deepCopyRec);
+  }
+
+  // if object exist create copy
+  const copy = {};
+  for (let key in obj) {
+    // is direct key and not inherited one from prototype
+    if (obj.hasOwnProperty(key)) {
+      copy[key] = deepCopyRec(obj[key]);
+    }
+  }
+  // return this recursion fn level copy object
+  return copy;
+}
+// copyObjectDeep(employees);
+
+// Q12. Write a function that can be used to merge an original array with a new array while avoiding duplicate elements.
+function mergeArr(arr1, arr2) {
+  return Array.from(new Set([...arr1, ...arr2]));
+}
+// console.log(mergeArr([1, 2, 3, 4], [1, 2, 3, 4, 4, 5, 6, 7]));
+
+// Q12. sort array
+function sortArr(arr, order = 0) {
+  // desc
+  if (order === 0) {
+    return arr.sort((a, b) => b - a);
+  }
+  // asc
+  if (order === 1) {
+    return arr.sort((a, b) => a - b);
+  }
+}
+// console.log(sortArr([3, 2, 1, 4, 56], 1));
+
+// Currying is a functional programming technique where a function with multiple arguments is
+// transformed into a sequence of functions, each taking a single argument. In JavaScript, this
+// is often used to create reusable, partially applied functions.
+
+// Normal function
+function add(a, b, c) {
+  return a + b + c;
+}
+
+// Curried version
+function curriedAdd(a) {
+  return function (b) {
+    return function (c) {
+      return a + b + c;
+    };
+  };
+}
+
+// console.log(curriedAdd(1)(2)(3));

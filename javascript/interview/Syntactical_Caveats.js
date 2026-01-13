@@ -211,3 +211,50 @@ function curriedAdd(a) {
 }
 
 // console.log(curriedAdd(1)(2)(3));
+
+// Q13. function to memoize
+function memoize(fn) {
+  const cache = new Map();
+
+  // taking all arguments using rest params
+  return function (...args) {
+    const key = JSON.stringify(args); // serialize arguments as key
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+}
+// A slow function
+function slowFib(n) {
+  if (n <= 1) return n;
+  return slowFib(n - 1) + slowFib(n - 2);
+}
+
+// Memoized version
+const memoizedFib = memoize(slowFib);
+
+console.log(memoizedFib(40));
+console.log(memoizedFib(40)); // instantly returns cached result
+
+// Q14. function to flatten nd array using stack
+function flatten(arr) {
+  const stack = [...arr];
+  const result = [];
+
+  while (stack.length > 0) {
+    const next = stack.pop(); // taking from end
+
+    if (Array.isArray(next)) {
+      // push its elements back onto stack
+      stack.push(...next);
+    } else {
+      result.push(next);
+    }
+  }
+
+  // reversing to restore order (for LIFO)
+  return result.reverse();
+}

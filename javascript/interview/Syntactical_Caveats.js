@@ -132,7 +132,7 @@ function getValue(obj, key) {
   }
 }
 
-console.log(getValue({ name: "bob" }, "name"));
+// console.log(getValue({ name: "bob" }, "name"));
 
 // Q11. Copying Objects
 function copyObjectDeep(obj) {
@@ -236,8 +236,8 @@ function slowFib(n) {
 // Memoized version
 const memoizedFib = memoize(slowFib);
 
-console.log(memoizedFib(40));
-console.log(memoizedFib(40)); // instantly returns cached result
+// console.log(memoizedFib(40));
+// console.log(memoizedFib(40)); // instantly returns cached result
 
 // Q14. function to flatten nd array using stack
 function flatten(arr) {
@@ -258,3 +258,38 @@ function flatten(arr) {
   // reversing to restore order (for LIFO)
   return result.reverse();
 }
+
+// Q15. debounce and throttle
+function debounce(fn, delay) {
+  // to persist across calls
+  let timers;
+  return (...args) => {
+    // clearing previous timer first
+    clearTimeout(timers);
+    // calling the fn
+    timers = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+const dbex = debounce((query) => {
+  console.log("Searching for:", query);
+}, 500);
+dbex("testing");
+
+function throttle(fn, interval) {
+  let lastTime = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastTime > interval) {
+      fn(...args);
+    }
+    // update the lasttime
+    lastTime = now;
+  };
+}
+
+// eg logging scroll position once every 200ms
+// const handleScroll = throttle(() => {
+//   console.log("Scroll position:", window.scrollY);
+// }, 200);

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Stack/questions/minAddParenthesis.js"
+    "start":"tsc && node ./typescript/dist/Trees/questions/bfs.js"
     
   },
   "keywords": [],

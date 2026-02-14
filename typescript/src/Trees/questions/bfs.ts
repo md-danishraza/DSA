@@ -105,3 +105,98 @@ function zigzagLevelOrder(root: node | null): number[][] {
 }
 
 console.log(zigzagLevelOrder(root));
+
+// L-637 average value of level in b tree
+function avgValueOfLevels(root: node) {
+  if (!root) return [];
+
+  const result: number[] = [];
+  const queue: node[] = [root];
+
+  while (queue.length > 0) {
+    const levelSize = queue.length;
+
+    let levelSum = 0;
+
+    for (let i = 0; i < levelSize; i++) {
+      // Standard BFS: Dequeue the front element
+      const currentNode = queue.shift()!;
+
+      // Add directly to the sum
+      levelSum += currentNode.value;
+
+      if (currentNode.left) queue.push(currentNode.left);
+      if (currentNode.right) queue.push(currentNode.right);
+    }
+
+    // Add avg to our final result
+    result.push(levelSum / levelSize);
+  }
+
+  return result;
+}
+
+console.log(avgValueOfLevels(root));
+
+// level order successor
+function levelOrderSuccessor(root: node, target: number) {
+  if (!root) return [];
+
+  const queue: node[] = [root];
+
+  while (queue.length > 0) {
+    const levelSize = queue.length;
+
+    for (let i = 0; i < levelSize; i++) {
+      // Standard BFS: Dequeue the front element
+      const currentNode = queue.shift()!;
+
+      // pushing first so that if last node of level will have successor in first node of second level
+      if (currentNode.left) queue.push(currentNode.left);
+      if (currentNode.right) queue.push(currentNode.right);
+
+      // if it matched the target
+      if (currentNode.value === target) {
+        if (queue.length > 0) {
+          return queue[0].value;
+        } else {
+          return null;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+console.log(levelOrderSuccessor(root, 3));
+
+// reverse the result eg. bottom to up
+function levelOrderTraversal2(root: node) {
+  const result: number[][] = [];
+  const queue: node[] = [root];
+
+  while (queue.length) {
+    // current level length
+    const levelSize = queue.length;
+    // current level ans
+    const level: number[] = [];
+    for (let i = 0; i < levelSize; i++) {
+      // popleft
+      const current = queue.shift();
+      if (current) {
+        level.push(current.value);
+
+        // enque
+        if (current.left) queue.push(current.left);
+        if (current.right) queue.push(current.right);
+      }
+    }
+
+    // insert this level
+    result.push(level);
+  }
+
+  console.log(result.reverse());
+}
+levelOrderTraversal2(root);

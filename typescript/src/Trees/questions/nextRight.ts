@@ -110,5 +110,48 @@ function connect2(root: node | null): node | null {
   return root;
 }
 
-connect2(root);
-print(root);
+// connect2(root);
+// print(root);
+
+// right most - L-199
+// works well for perfect binary tree
+function rightmost(root: node) {
+  if (!root.right) {
+    console.log(root.val);
+    return;
+  }
+  let current = root;
+  while (current) {
+    console.log(current.val);
+    // shift
+    current = current.right!;
+  }
+}
+
+rightmost(root);
+
+// correct approach
+function rightSideView(root: node | null): number[] {
+  if (!root) return [];
+
+  const result: number[] = [];
+  const queue: node[] = [root];
+
+  while (queue.length > 0) {
+    const levelSize = queue.length;
+
+    for (let i = 0; i < levelSize; i++) {
+      const currentNode = queue.shift()!;
+
+      // If this is the last node in the current level, it's visible from the right!
+      if (i === levelSize - 1) {
+        result.push(currentNode.val);
+      }
+
+      if (currentNode.left) queue.push(currentNode.left);
+      if (currentNode.right) queue.push(currentNode.right);
+    }
+  }
+
+  return result;
+}

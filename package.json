@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Trees/questions/nextRight.js"
+    "start":"tsc && node ./typescript/dist/Trees/questions/symmetric.js"
     
   },
   "keywords": [],

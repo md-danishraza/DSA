@@ -28,7 +28,7 @@ function diameter(root: node | null) {
     const curHeight = Math.max(lh, rh) + 1;
 
     // update diameter (longest path through this node)
-    diameter = Math.max(curHeight, diameter);
+    diameter = Math.max(lh + rh, diameter);
 
     return curHeight;
   }

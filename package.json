@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/DAA/09_radixSort.js"
+    "start":"tsc && node ./typescript/dist/Trees/questions/_230_kth_smallest.js"
     
   },
   "keywords": [],

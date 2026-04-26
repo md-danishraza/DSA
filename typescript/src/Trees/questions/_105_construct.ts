@@ -15,30 +15,39 @@ class TreeNode {
   }
 }
 
-function buildTree(preorder: number[], inorder: number[]): TreeNode | null {
-  // base case
-  if (!inorder.length) return null;
+function buildTree(inorder: number[], postorder: number[]): TreeNode | null {
+  // hashMap of inorder to get index in constant
+  let inorderMap = new Map<number, number>();
+  for (let i = 0; i < inorder.length; i++) {
+    inorderMap.set(inorder[i], i);
+  }
 
-  // pop from preOrder
-  let currentRoot = preorder.shift()!;
+  // pointer to track current root, instead of popping
+  let postIndex = postorder.length - 1;
 
-  // find index in inorder
-  //   let rootIndex: number = findIndex(inorder, currentRoot)!;
-  let rootIndex: number = inorder.indexOf(currentRoot);
+  function buildRec(s: number, e: number): TreeNode | null {
+    if (s > e) return null;
 
-  // then partition
-  let leftSubtree = inorder.slice(0, rootIndex);
-  let rightSubtree = inorder.slice(rootIndex + 1, inorder.length);
+    // get current root
+    let root = postorder[postIndex];
+    postIndex--;
 
-  // create root node
-  let rootNode = new TreeNode(currentRoot);
+    // create new root node
+    let rootNode = new TreeNode(root);
 
-  // recursively create trees
-  //   preorder , left subtree should be created first
-  rootNode.left = buildTree(preorder, leftSubtree);
-  rootNode.right = buildTree(preorder, rightSubtree);
+    // finding the index in inorder to split
+    let splitIndex = inorderMap.get(root)!;
 
-  return rootNode;
+    // Right subtree first
+    rootNode.right = buildRec(splitIndex + 1, e);
+
+    // Left subtree second
+    rootNode.left = buildRec(s, splitIndex - 1);
+
+    return rootNode;
+  }
+
+  return buildRec(0, inorder.length - 1);
 }
 
 // function findIndex(inOrder: number[], root: number) {

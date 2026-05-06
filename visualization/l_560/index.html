@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prefix Sum Visualizer</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+        color: #333;
+      }
+      .controls {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .dashboard {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 20px;
+        font-size: 1.2em;
+      }
+
+      .array-container {
+        display: flex;
+        gap: 10px;
+        margin: 30px 0;
+        padding-bottom: 10px;
+      }
+      .array-box {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+      }
+
+      /* Highlight Classes */
+      .active {
+        border-color: #007bff;
+        background-color: #e6f2ff;
+        transform: scale(1.1);
+      }
+      .found-element {
+        background-color: #d4edda;
+        border-color: #28a745;
+      }
+
+      .map-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 1.2em;
+        min-height: 100px;
+      }
+      .log {
+        margin-top: 20px;
+        color: #666;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Prefix Sum Subarray Visualizer</h2>
+
+    <div class="controls">
+      <button id="stepBtn">Next Step</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="dashboard">
+      <div><strong>Target (K):</strong> <span id="targetK">4</span></div>
+      <div><strong>Current Sum:</strong> <span id="currentSum">0</span></div>
+      <div>
+        <strong>Subarrays Found:</strong>
+        <span style="color: #28a745" id="totalFound">0</span>
+      </div>
+    </div>
+
+    <div class="array-container" id="arrayContainer"></div>
+
+    <h3>Hash Map State { PrefixSum : Frequency }</h3>
+    <div class="map-box" id="mapContainer"></div>
+    <div class="log" id="actionLog">Click 'Next Step' to begin.</div>
+
+    <script>
+      // --- DATA STATE ---
+      const nums = [2, -2, 2, 4, -4, 4];
+      const K = 4;
+
+      // --- MUTABLE STATE ---
+      let currentIndex = -1;
+      let runningSum = 0;
+      let totalSubarrays = 0;
+      let prefixMap = new Map();
+
+      // --- DOM ELEMENTS ---
+      const arrayContainer = document.getElementById("arrayContainer");
+      const mapContainer = document.getElementById("mapContainer");
+      const sumDisplay = document.getElementById("currentSum");
+      const totalDisplay = document.getElementById("totalFound");
+      const logDisplay = document.getElementById("actionLog");
+      const stepBtn = document.getElementById("stepBtn");
+
+      // --- INITIALIZATION ---
+      function init() {
+        currentIndex = -1;
+        runningSum = 0;
+        totalSubarrays = 0;
+        prefixMap = new Map();
+        prefixMap.set(0, 1); // Base case initialization
+
+        // Render Array
+        arrayContainer.innerHTML = "";
+        nums.forEach((num, index) => {
+          const box = document.createElement("div");
+          box.className = "array-box";
+          box.id = `box-${index}`;
+          box.innerText = num;
+          arrayContainer.appendChild(box);
+        });
+
+        updateUI("Ready to process...");
+        stepBtn.disabled = false;
+      }
+
+      // --- THE ALGORITHM STEP ---
+      function step() {
+        currentIndex++;
+
+        if (currentIndex >= nums.length) {
+          logDisplay.innerText = "Array traversal complete!";
+          stepBtn.disabled = true;
+          return;
+        }
+
+        // Remove previous active highlights
+        document
+          .querySelectorAll(".array-box")
+          .forEach((el) => el.classList.remove("active"));
+
+        // Highlight current box
+        const currentBox = document.getElementById(`box-${currentIndex}`);
+        currentBox.classList.add("active");
+
+        const currentNum = nums[currentIndex];
+        runningSum += currentNum;
+        const targetPrefix = runningSum - K;
+
+        let actionText = `Added ${currentNum}. Sum is now ${runningSum}. Looking for map[${runningSum} - ${K}] = map[${targetPrefix}]. `;
+
+        // Check Map
+        if (prefixMap.has(targetPrefix)) {
+          let frequency = prefixMap.get(targetPrefix);
+          totalSubarrays += frequency;
+          actionText += `Found ${targetPrefix} in map ${frequency} time(s)! Adding ${frequency} to total.`;
+          currentBox.classList.add("found-element");
+        } else {
+          actionText += `${targetPrefix} not found in map.`;
+        }
+
+        // Update Map with new sum
+        if (prefixMap.has(runningSum)) {
+          prefixMap.set(runningSum, prefixMap.get(runningSum) + 1);
+        } else {
+          prefixMap.set(runningSum, 1);
+        }
+
+        updateUI(actionText);
+      }
+
+      // --- RENDER HELPERS ---
+      function updateUI(logMessage) {
+        sumDisplay.innerText = runningSum;
+        totalDisplay.innerText = totalSubarrays;
+        logDisplay.innerText = logMessage;
+
+        // Format Map nicely
+        let mapString = "{ <br/>";
+        for (let [key, value] of prefixMap) {
+          mapString += `&nbsp;&nbsp;<strong>${key}</strong> : ${value},<br/>`;
+        }
+        mapString += "}";
+        mapContainer.innerHTML = mapString;
+      }
+
+      // --- EVENT LISTENERS ---
+      document.getElementById("stepBtn").addEventListener("click", step);
+      document.getElementById("resetBtn").addEventListener("click", init);
+
+      // Start
+      init();
+    </script>
+  </body>
+</html>

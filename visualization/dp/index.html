@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recursion vs DP Visualizer</title>
+    <style>
+      :root {
+        --primary: #2c3e50;
+        --naive: #e74c3c;
+        --dp: #3498db;
+        --cache: #f1c40f;
+        --bg: #f8f9fa;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: var(--bg);
+      }
+      h1,
+      h2,
+      h3 {
+        color: var(--primary);
+      }
+
+      .explanation {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .concept-card {
+        padding: 15px;
+        border-left: 4px solid var(--primary);
+        background: #f1f2f6;
+        margin-bottom: 10px;
+      }
+
+      /* Demo Controls */
+      .controls {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      input[type="number"] {
+        padding: 8px;
+        font-size: 16px;
+        width: 80px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        transition: opacity 0.2s;
+        font-weight: bold;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      #btn-naive {
+        background-color: var(--naive);
+      }
+      #btn-dp {
+        background-color: var(--dp);
+      }
+      #btn-reset {
+        background-color: #7f8c8d;
+      }
+
+      /* Visualization Areas */
+      .viz-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .panel {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        min-height: 300px;
+      }
+      .stats {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+        font-weight: bold;
+      }
+
+      /* Call Blocks */
+      .call-area {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-content: flex-start;
+      }
+      .call-box {
+        padding: 6px 12px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9em;
+        animation: popIn 0.3s ease;
+      }
+      @keyframes popIn {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .box-naive {
+        background-color: var(--naive);
+      }
+      .box-dp {
+        background-color: var(--dp);
+      }
+      .box-cache {
+        background-color: var(--cache);
+        color: black;
+        border: 1px solid #d4ac0d;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Recursion & Dynamic Programming</h1>
+
+    <div class="explanation">
+      <h2>The Core Concepts</h2>
+      <div class="grid">
+        <div>
+          <div class="concept-card" style="border-color: var(--naive)">
+            <h3>Recursion</h3>
+            <p>
+              A function calling itself to solve smaller instances of the same
+              problem. It requires a <strong>Base Case</strong> (to stop) and a
+              <strong>Recursive Step</strong>. <br /><br /><em>Drawback:</em> It
+              often suffers from "Overlapping Subproblems", calculating the
+              exact same thing multiple times.
+            </p>
+          </div>
+        </div>
+        <div>
+          <div class="concept-card" style="border-color: var(--dp)">
+            <h3>Dynamic Programming (DP)</h3>
+            <p>
+              An optimization technique that solves overlapping subproblems by
+              saving the answers in memory.
+              <strong>DP = Recursion + Memory.</strong>
+            </p>
+            <ul>
+              <li>
+                <strong>Top-Down (Memoization):</strong> Keep the recursive
+                structure, but save results to a Hash Map/Array.
+              </li>
+              <li>
+                <strong>Bottom-Up (Tabulation):</strong> Remove recursion
+                entirely. Use loops to build an array from the base cases
+                upward.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Interactive Demo: Fibonacci Sequence</h2>
+    <p>
+      Watch how Naive Recursion recalculates the same values, while DP
+      (Memoization) uses "Cache Hits" to skip redundant work.
+    </p>
+
+    <div class="controls">
+      <label for="n-input"><strong>Target N:</strong></label>
+      <input type="number" id="n-input" value="5" min="1" max="10" />
+
+      <button id="btn-naive">Run Naive Recursion</button>
+      <button id="btn-dp">Run DP (Memoization)</button>
+      <button id="btn-reset">Clear</button>
+
+      <span style="margin-left: auto; font-size: 0.9em; color: #666">
+        Speed:
+        <input
+          type="range"
+          id="speed"
+          min="10"
+          max="500"
+          value="150"
+          style="width: 80px"
+        />
+      </span>
+    </div>
+
+    <div class="viz-container">
+      <!-- Naive Panel -->
+      <div class="panel">
+        <h3 style="color: var(--naive); margin-top: 0">Naive Execution</h3>
+        <div class="stats">
+          Total Function Calls: <span id="naive-count">0</span><br />
+          <span style="font-size: 0.8em; color: #666"
+            >(Exponential Time: O(2^N))</span
+          >
+        </div>
+        <div class="call-area" id="naive-area"></div>
+      </div>
+
+      <!-- DP Panel -->
+      <div class="panel">
+        <h3 style="color: var(--dp); margin-top: 0">DP Execution</h3>
+        <div class="stats">
+          Total Function Calls: <span id="dp-count">0</span><br />
+          Cache Hits Saved Work:
+          <span id="dp-hits" style="color: #b99700">0</span><br />
+          <span style="font-size: 0.8em; color: #666">(Linear Time: O(N))</span>
+        </div>
+        <div class="call-area" id="dp-area"></div>
+      </div>
+    </div>
+
+    <script>
+      // --- DOM Elements ---
+      const nInput = document.getElementById("n-input");
+      const speedSlider = document.getElementById("speed");
+      const btnNaive = document.getElementById("btn-naive");
+      const btnDp = document.getElementById("btn-dp");
+      const btnReset = document.getElementById("btn-reset");
+
+      const naiveArea = document.getElementById("naive-area");
+      const naiveCountDisplay = document.getElementById("naive-count");
+
+      const dpArea = document.getElementById("dp-area");
+      const dpCountDisplay = document.getElementById("dp-count");
+      const dpHitsDisplay = document.getElementById("dp-hits");
+
+      let isRunning = false;
+
+      // --- Helper Function ---
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      function setButtons(disabled) {
+        btnNaive.disabled = disabled;
+        btnDp.disabled = disabled;
+        nInput.disabled = disabled;
+        isRunning = disabled;
+      }
+
+      // --- Naive Recursion Animation ---
+      async function runNaive() {
+        if (isRunning) return;
+        setButtons(true);
+        naiveArea.innerHTML = "";
+        let count = 0;
+        naiveCountDisplay.innerText = "0";
+
+        const n = parseInt(nInput.value);
+
+        async function fib(x) {
+          count++;
+          naiveCountDisplay.innerText = count;
+
+          const box = document.createElement("div");
+          box.className = "call-box box-naive";
+          box.innerText = `fib(${x})`;
+          naiveArea.appendChild(box);
+
+          await sleep(speedSlider.value);
+
+          if (x <= 1) return x;
+          return (await fib(x - 1)) + (await fib(x - 2));
+        }
+
+        await fib(n);
+        setButtons(false);
+      }
+
+      // --- DP (Memoization) Animation ---
+      async function runDP() {
+        if (isRunning) return;
+        setButtons(true);
+        dpArea.innerHTML = "";
+        let count = 0;
+        let hits = 0;
+        dpCountDisplay.innerText = "0";
+        dpHitsDisplay.innerText = "0";
+
+        const memo = {};
+        const n = parseInt(nInput.value);
+
+        async function fib(x) {
+          count++;
+          dpCountDisplay.innerText = count;
+
+          const box = document.createElement("div");
+
+          // Check Cache (Memo)
+          if (x in memo) {
+            hits++;
+            dpHitsDisplay.innerText = hits;
+
+            box.className = "call-box box-cache";
+            box.innerText = `HIT fib(${x})`;
+            dpArea.appendChild(box);
+
+            await sleep(speedSlider.value);
+            return memo[x]; // Return instantly!
+          }
+
+          // Normal Execution
+          box.className = "call-box box-dp";
+          box.innerText = `fib(${x})`;
+          dpArea.appendChild(box);
+
+          await sleep(speedSlider.value);
+
+          if (x <= 1) return x;
+
+          // Save to Cache
+          memo[x] = (await fib(x - 1)) + (await fib(x - 2));
+          return memo[x];
+        }
+
+        await fib(n);
+        setButtons(false);
+      }
+
+      // --- Reset ---
+      function reset() {
+        if (isRunning) return;
+        naiveArea.innerHTML = "";
+        dpArea.innerHTML = "";
+        naiveCountDisplay.innerText = "0";
+        dpCountDisplay.innerText = "0";
+        dpHitsDisplay.innerText = "0";
+      }
+
+      // --- Event Listeners ---
+      btnNaive.addEventListener("click", runNaive);
+      btnDp.addEventListener("click", runDP);
+      btnReset.addEventListener("click", reset);
+    </script>
+  </body>
+</html>

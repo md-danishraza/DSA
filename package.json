@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Arrays/12_subArraySumEqualsK.js"
+    "start":"tsc && node ./typescript/dist/DP/01_knapsack.js"
  
     
   },
@@ -16,3 +16,4 @@
     "typescript": "^5.9.2"
   }
 }
+

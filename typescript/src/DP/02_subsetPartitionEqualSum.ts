@@ -43,5 +43,38 @@ function canPartition(nums: number[]): boolean {
   return recursiveFn();
 }
 
-console.log(canPartition([1, 5, 11, 5]));
-console.log(canPartition([1, 2, 3, 5]));
+// tabulation
+// for O n.s
+function canPartition2(nums: number[]): boolean {
+  // find total sum
+  let totalSum = 0;
+
+  for (let num of nums) totalSum += num;
+
+  // if its even then division is possible (2 subsets equal sum)
+  // else return false
+  if (totalSum % 2 !== 0) return false;
+
+  const targetSum = totalSum / 2;
+
+  // dp nums+1 , targetsum+1
+  let dp: boolean[][] = Array(nums.length + 1)
+    .fill(null)
+    .map(() => Array(targetSum + 1).fill(false));
+
+  // base case: sum 0 is always possible
+  for (let i = 0; i <= nums.length; i++) dp[i][0] = true;
+
+  for (let i = 1; i <= nums.length; i++) {
+    for (let s = 1; s <= targetSum; s++) {
+      // either skip nums[i-1] or take it if possible(then check remaining sum)
+      dp[i][s] =
+        dp[i - 1][s] || (s >= nums[i - 1] ? dp[i - 1][s - nums[i - 1]] : false);
+    }
+  }
+
+  return dp[nums.length][targetSum];
+}
+
+console.log(canPartition2([1, 5, 11, 5]));
+console.log(canPartition2([1, 2, 3, 5]));

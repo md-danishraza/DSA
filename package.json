@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Window/ConseqPrimeSum.js"
+    "start":"tsc && node ./typescript/dist/Arrays/14_printVertically.js"
  
     
   },

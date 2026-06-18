@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Arrays/16_longestCommonPrefix.js"
+    "start":"tsc && node ./typescript/dist/Arrays/17_partitionLabels.js"
  
     
   },

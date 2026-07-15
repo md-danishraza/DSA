@@ -30,3 +30,8 @@ function subarraySum(nums: number[], k: number): number {
 
   return totalSubarr;
 }
+
+
+
+
+

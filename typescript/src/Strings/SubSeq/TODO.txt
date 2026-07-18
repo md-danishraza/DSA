@@ -1,0 +1,8 @@
+392. Is Subsequence — Two pointers
+792. Number of Matching Subsequences — HashMap + queues
+300. Longest Increasing Subsequence — DP, then Binary Search
+673. Number of LIS — DP
+376. Wiggle Subsequence — Greedy
+115. Distinct Subsequences — Classic DP
+940. Distinct Subsequences II — Advanced DP
+727. Minimum Window Subsequence — Two pointers + DP/backtracking

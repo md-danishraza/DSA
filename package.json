@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/TwoPointers/5_longest_substring.js"
+    "start":"tsc && node ./typescript/dist/TwoPointers/8_longest_mountain.js"
  
     
   },

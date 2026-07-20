@@ -30,6 +30,7 @@ function threeSum(nums: number[], target: number): number[][] {
 console.log(threeSum([-1, 0, 1, 2, -1, -4], 0));
 // Output: [ [-1,-1,2], [-1,0,1] ]
 
+// find all sum with triplet zero
 function threeSum2(nums: number[]): number[][] {
   nums.sort((a, b) => a - b);
   const result = [];

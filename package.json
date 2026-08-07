@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Greedy/4_minSetSize.js"
+    "start":"tsc && node ./typescript/dist/Heap/1_kthSmallest.js"
  
     
   },

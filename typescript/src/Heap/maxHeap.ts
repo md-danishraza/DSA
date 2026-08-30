@@ -1,10 +1,15 @@
-console.log("heaps");
+// console.log("heaps");
 
-class MaxHeap {
+export class MaxHeap {
   arr: number[] = [];
 
   private swap(i: number, j: number) {
     [this.arr[i], this.arr[j]] = [this.arr[j], this.arr[i]];
+  }
+  
+  // property instead of method
+  get size(): number {
+    return this.arr.length;
   }
 
   private parent(i: number) {
@@ -21,7 +26,7 @@ class MaxHeap {
     // add at last index
     this.arr.push(value);
     this.insert_recurive(this.arr.length - 1);
-    console.log(`new root :- ${this.arr[0]}`);
+    // console.log(`new root :- ${this.arr[0]}`);
   }
   //   upHeap
   private insert_recurive(index: number) {
@@ -40,7 +45,7 @@ class MaxHeap {
 
   remove() {
     if (!this.arr.length) {
-      console.log("heap is empty!!");
+      // console.log("heap is empty!!");
       return;
     }
     // remove root and replace it with last
@@ -52,9 +57,41 @@ class MaxHeap {
     if (this.arr.length) {
       this.remove_balance(0);
     }
-    console.log(`removed element :- ${removed}`);
-    console.log(`new root :- ${this.arr[0]}`);
+    // console.log(`removed element :- ${removed}`);
+    // console.log(`new root :- ${this.arr[0]}`);
+
+    return removed
   }
+
+    removeValue(value: number) {
+      const index = this.arr.indexOf(value);
+
+      if (index === -1) {
+          return;
+      }
+
+      // remove last and replace with current index
+      const last = this.arr.pop()!;
+
+      // Removing the last element
+      if (index === this.arr.length) {
+          return;
+      }
+
+      this.arr[index] = last;
+
+      // It might need to move up OR down
+      const parent = this.parent(index);
+
+      // heapify up (if parent vlue is smaller)
+      if (index > 0 && this.arr[index] > this.arr[parent]) {
+          this.insert_recurive(index);
+      } else {
+        // heapify down
+          this.remove_balance(index);
+      }
+  }
+
   //   downHeap
   private remove_balance(index: number) {
     const leftIndex = this.leftChild(index);
@@ -85,14 +122,14 @@ class MaxHeap {
   // heap sort
   heapSort() {
     if (!this.arr.length) {
-      console.log("heap is empty!!");
+      // console.log("heap is empty!!");
       return;
     }
 
     //   remove root till its empty
     const sorted: number[] = [];
     this.heapSort_recursive(sorted);
-    console.log(sorted);
+    // console.log(sorted);
   }
   private heapSort_recursive(sorted: number[]) {
     if (!this.arr.length) {
@@ -106,6 +143,10 @@ class MaxHeap {
     this.remove_balance(0);
     this.heapSort_recursive(sorted);
   }
+
+  peek(): number | undefined {
+    return this.arr[0];
+}
 }
 
 const mHeap = new MaxHeap();

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/Heap/4_rearrangeBarcodes.js"
+    "start":"tsc && node ./typescript/dist/Heap/6_minCostHire.js"
  
     
   },

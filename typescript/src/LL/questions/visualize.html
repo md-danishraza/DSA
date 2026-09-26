@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monotonic Stack Visualizer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+  body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 24px; }
+  h1 { color: #38bdf8; margin-bottom: 8px; }
+  p.subtitle { color: #94a3b8; margin-bottom: 24px; }
+
+  .layout { display: flex; gap: 24px; max-width: 1000px; width: 100%; flex-wrap: wrap; justify-content: center; }
+  .panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; flex: 1; min-width: 300px; }
+  
+  /* Status Message */
+  .status-box { width: 100%; max-width: 1000px; background: #0284c7; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; text-align: center; margin-bottom: 20px; font-size: 1.1rem; min-height: 52px; display: flex; align-items: center; justify-content: center; }
+
+  /* Arrays */
+  .array-container { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; align-items: center; }
+  .array-row { display: flex; gap: 8px; align-items: center; }
+  .array-label { width: 50px; font-weight: bold; color: #94a3b8; text-align: right; margin-right: 8px; }
+  .cell { width: 50px; height: 50px; background: #334155; border: 2px solid #475569; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; position: relative; transition: all 0.2s; }
+  .cell.active { border-color: #f59e0b; background: #78350f; transform: scale(1.1); z-index: 10; }
+  
+  /* Stack */
+  .stack-container { display: flex; flex-direction: column; align-items: center; height: 260px; justify-content: flex-end; margin-top: 20px; }
+  .stack-wrapper { display: flex; flex-direction: column-reverse; width: 100px; border-left: 4px solid #64748b; border-right: 4px solid #64748b; border-bottom: 4px solid #64748b; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; min-height: 220px; padding: 8px; gap: 8px; justify-content: flex-start; background: #0b1120; }
+  .stack-item { background: #10b981; color: #fff; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 1.1rem; animation: popIn 0.2s ease-out; }
+  @keyframes popIn { 0% { transform: translateY(-10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+  /* Code */
+  .code-block { background: #0b1120; padding: 16px; border-radius: 8px; font-size: 0.9rem; line-height: 1.7; }
+  .code-line { padding: 2px 8px; border-radius: 4px; border-left: 3px solid transparent; }
+  .code-line.active { background: #0369a1; border-left-color: #38bdf8; font-weight: bold; color: white; }
+
+  /* Controls */
+  .controls { display: flex; gap: 12px; justify-content: center; margin-top: 24px; width: 100%; }
+  button { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  button:hover { background: #1d4ed8; }
+  button:disabled { background: #475569; cursor: not-allowed; }
+  .btn-reset { background: #dc2626; }
+  .btn-reset:hover { background: #b91c1c; }
+</style>
+</head>
+<body>
+
+<h1>Next Larger Nodes</h1>
+<p class="subtitle">Monotonic Stack (Right-to-Left) Execution</p>
+
+<div class="status-box" id="statusMsg">Ready to start. Click Next Step.</div>
+
+<div class="layout">
+  <!-- Arrays Panel -->
+  <div class="panel">
+    <h3 style="text-align: center; color: #38bdf8;">Data Arrays</h3>
+    <div class="array-container">
+      <div class="array-row">
+        <div class="array-label">Vals</div>
+        <div id="valsRow" style="display:flex; gap:8px;"></div>
+      </div>
+      <div class="array-row">
+        <div class="array-label">Ans</div>
+        <div id="ansRow" style="display:flex; gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stack Panel -->
+  <div class="panel" style="flex: 0.5;">
+    <h3 style="text-align: center; color: #38bdf8;">Monotonic Stack</h3>
+    <div class="stack-container">
+      <div class="stack-wrapper" id="stackDisplay"></div>
+    </div>
+  </div>
+
+  <!-- Code Panel -->
+  <div class="panel">
+    <h3 style="text-align: center; color: #38bdf8;">Code Trace</h3>
+    <div class="code-block" style="margin-top: 16px;">
+      <div class="code-line" id="line-1">for (let i = n - 1; i >= 0; i--) {</div>
+      <div class="code-line" id="line-2">&nbsp;&nbsp;while (stack.length && stack.at(-1) <= vals[i]) {</div>
+      <div class="code-line" id="line-3">&nbsp;&nbsp;&nbsp;&nbsp;stack.pop();</div>
+      <div class="code-line" id="line-4">&nbsp;&nbsp;}</div>
+      <div class="code-line" id="line-5">&nbsp;&nbsp;if (stack.length > 0) {</div>
+      <div class="code-line" id="line-6">&nbsp;&nbsp;&nbsp;&nbsp;ans[i] = stack.at(-1);</div>
+      <div class="code-line" id="line-7">&nbsp;&nbsp;}</div>
+      <div class="code-line" id="line-8">&nbsp;&nbsp;stack.push(vals[i]);</div>
+      <div class="code-line" id="line-9">}</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button id="btnPrev" onclick="step(-1)">← Prev Step</button>
+  <button id="btnNext" onclick="step(1)">Next Step →</button>
+  <button class="btn-reset" onclick="reset()">Reset</button>
+</div>
+
+<script>
+  const VALS = [2, 7, 4, 3, 5];
+  let steps = [];
+  let currentStep = 0;
+
+  function generateSteps() {
+    steps = [];
+    let stack = [];
+    let ans = [0, 0, 0, 0, 0];
+    
+    steps.push({ line: 0, i: -1, stack: [...stack], ans: [...ans], msg: "Initial Setup: Convert linked list to Vals array. Ans array is filled with 0s." });
+
+    for (let i = VALS.length - 1; i >= 0; i--) {
+      let val = VALS[i];
+      steps.push({ line: 1, i, stack: [...stack], ans: [...ans], msg: `Iteration: Move to index ${i}, value is ${val}.` });
+      
+      while (true) {
+        let top = stack.length > 0 ? stack[stack.length - 1] : null;
+        if (stack.length > 0 && top <= val) {
+          steps.push({ line: 2, i, stack: [...stack], ans: [...ans], msg: `Stack top (${top}) is <= ${val}. It can never be the next greater element for anything further left.` });
+          stack.pop();
+          steps.push({ line: 3, i, stack: [...stack], ans: [...ans], msg: `Popped ${top} from stack.` });
+        } else {
+          steps.push({ line: 2, i, stack: [...stack], ans: [...ans], msg: stack.length === 0 ? `Stack is empty. Loop ends.` : `Stack top (${top}) is > ${val}. Loop ends.` });
+          break;
+        }
+      }
+
+      steps.push({ line: 5, i, stack: [...stack], ans: [...ans], msg: `Is stack empty? ${stack.length > 0 ? 'No' : 'Yes'}` });
+      
+      if (stack.length > 0) {
+        ans[i] = stack[stack.length - 1];
+        steps.push({ line: 6, i, stack: [...stack], ans: [...ans], msg: `Set ans[${i}] to stack top: ${stack[stack.length - 1]}` });
+      }
+
+      stack.push(val);
+      steps.push({ line: 8, i, stack: [...stack], ans: [...ans], msg: `Push current value (${val}) to the stack as a potential candidate for elements to its left.` });
+    }
+    
+    steps.push({ line: 9, i: -1, stack: [...stack], ans: [...ans], msg: "Finished! The Ans array now holds the next greater node values." });
+  }
+
+  function render() {
+    const s = steps[currentStep];
+
+    // Status
+    document.getElementById('statusMsg').textContent = s.msg;
+
+    // Code highlight
+    for (let i = 1; i <= 9; i++) {
+      const el = document.getElementById(`line-${i}`);
+      if (el) el.classList.toggle('active', i === s.line);
+    }
+
+    // Render Arrays
+    const valsRow = document.getElementById('valsRow');
+    const ansRow = document.getElementById('ansRow');
+    valsRow.innerHTML = '';
+    ansRow.innerHTML = '';
+    
+    for (let j = 0; j < VALS.length; j++) {
+      const isActive = j === s.i ? 'active' : '';
+      valsRow.innerHTML += `<div class="cell ${isActive}">${VALS[j]}</div>`;
+      ansRow.innerHTML += `<div class="cell ${isActive}">${s.ans[j]}</div>`;
+    }
+
+    // Render Stack (column-reverse renders bottom-up)
+    const stackDisplay = document.getElementById('stackDisplay');
+    stackDisplay.innerHTML = '';
+    s.stack.forEach(val => {
+      stackDisplay.innerHTML += `<div class="stack-item">${val}</div>`;
+    });
+
+    // Buttons
+    document.getElementById('btnPrev').disabled = currentStep === 0;
+    document.getElementById('btnNext').disabled = currentStep === steps.length - 1;
+  }
+
+  function step(dir) {
+    currentStep += dir;
+    if (currentStep < 0) currentStep = 0;
+    if (currentStep >= steps.length) currentStep = steps.length - 1;
+    render();
+  }
+
+  function reset() {
+    currentStep = 0;
+    render();
+  }
+
+  // Init
+  generateSteps();
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minesweeper DFS · stack & call trace</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #0b1a2e, #030712);
+      color: #eef2ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 30px 24px;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 2.2rem;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #9ac8ff, #6ea8fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1::after {
+      content: '⛏️';
+      font-size: 2rem;
+      filter: drop-shadow(0 2px 6px #38bdf8);
+    }
+
+    .subtitle {
+      color: #9bb4d0;
+      margin-bottom: 24px;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+      border-bottom: 1px dashed #2d3f5e;
+      padding-bottom: 14px;
+      width: 100%;
+      max-width: 1100px;
+      text-align: center;
+    }
+
+    /* main layout — three columns: stack, grid, code */
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      max-width: 1400px;
+      width: 100%;
+      justify-content: center;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .panel {
+      background: rgba(20, 32, 51, 0.8);
+      backdrop-filter: blur(6px);
+      border: 1px solid #2a405c;
+      border-radius: 26px;
+      padding: 22px 18px;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+      transition: border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel:hover {
+      border-color: #3d5d86;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #b9d6ff;
+      font-size: 1rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid #22344d;
+      padding-bottom: 12px;
+    }
+
+    .panel-header span {
+      background: #0f1b2d;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      color: #7aa9e6;
+      border: 1px solid #2b4b72;
+    }
+
+    /* STACK VISUALIZATION */
+    .stack-panel {
+      flex: 0 0 240px;
+      min-width: 220px;
+    }
+
+    .stack-container {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      min-height: 280px;
+      padding: 8px 0;
+      background: #0b131f;
+      border-radius: 18px;
+      box-shadow: inset 0 8px 12px -8px #00000066;
+    }
+
+    .stack-frame {
+      width: 100%;
+      background: linear-gradient(145deg, #1e3149, #0f1f31);
+      border: 1px solid #3f6ca0;
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-family: 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px -4px #00000080, inset 0 0 0 1px #ffffff0d;
+      transition: all 0.15s;
+      color: #d2e5ff;
+    }
+
+    .stack-frame .depth {
+      color: #5f9eff;
+      font-weight: 600;
+      font-size: 0.75rem;
+      background: #102433;
+      padding: 2px 8px;
+      border-radius: 24px;
+    }
+
+    .stack-frame .coord {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .stack-empty {
+      color: #44658b;
+      font-style: italic;
+      padding: 30px 0;
+      text-align: center;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+
+    /* GRID — central and wider */
+    .grid-panel {
+      flex: 2 1 420px;
+      min-width: 340px;
+    }
+
+    .grid-container {
+      display: flex;
+      justify-content: center;
+      padding: 6px 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 7px;
+      background: transparent;
+      padding: 6px;
+      border-radius: 18px;
+      width: fit-content;
+      margin: 0 auto;
+    }
+
+    .cell {
+      width: 62px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      font-weight: 700;
+      border-radius: 14px;
+      transition: all 0.15s cubic-bezier(0.2, 0.9, 0.4, 1);
+      box-shadow: 0 6px 0 #0b0f16, 0 8px 12px -4px black;
+      position: relative;
+      font-family: 'Inter', monospace;
+      will-change: transform;
+      border: 2px solid #324a66;
+    }
+
+    .cell-E {
+      background: #62758f;
+      color: #111c2c;
+      border-color: #b7cbee;
+    }
+
+    .cell-M {
+      background: #5f7188;
+      color: #f87171;
+      border-color: #e7a0a0;
+    }
+
+    .cell-B {
+      background: #1e2c3c;
+      color: #5e7a9c;
+      border-color: #2e435b;
+      box-shadow: 0 4px 0 #0e131b, 0 6px 8px -4px black;
+    }
+
+    .cell-num {
+      background: #1e2c3c;
+      border-color: #2e435b;
+      box-shadow: 0 4px 0 #0e131b, 0 6px 8px -4px black;
+    }
+
+    .num-1 { color: #74a9ff; }
+    .num-2 { color: #5ad9a0; }
+    .num-3 { color: #ff8a8a; }
+    .num-4 { color: #c49aff; }
+
+    /* ACTIVE / SCAN effects */
+    .cell.active-target {
+      background: #f59e0b !important;
+      color: #0c0f14 !important;
+      border: 2px solid #ffd966 !important;
+      transform: scale(1.12) translateY(-3px);
+      box-shadow: 0 0 18px #fbbf24, 0 10px 16px -6px black;
+      z-index: 12;
+    }
+
+    .cell.active-scan {
+      background: #b17aff !important;
+      color: #0c0f14 !important;
+      border: 2px solid #d9bbff !important;
+      transform: scale(1.04) translateY(-2px);
+      box-shadow: 0 0 12px #c084fc;
+      z-index: 8;
+    }
+
+    /* CODE PANEL — sleek */
+    .code-panel {
+      flex: 1.2 1 360px;
+      min-width: 300px;
+    }
+
+    .code-block {
+      background: #09111c;
+      border-radius: 18px;
+      padding: 16px 12px;
+      font-family: 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.75;
+      overflow-x: auto;
+      border: 1px solid #1f3750;
+      box-shadow: inset 0 0 20px #00000055;
+    }
+
+    .code-line {
+      padding: 3px 10px;
+      border-radius: 8px;
+      border-left: 4px solid transparent;
+      white-space: pre;
+      color: #b3cef0;
+      transition: all 0.1s;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+    }
+
+    .code-line.active {
+      background: linear-gradient(90deg, #104c7c, #0b2e4b);
+      border-left-color: #38bdf8;
+      font-weight: 600;
+      color: #ffffff;
+      box-shadow: 0 0 10px #1f6eb0;
+    }
+
+    .status-box {
+      width: 100%;
+      max-width: 1400px;
+      background: #0e1f31;
+      border: 1px solid #2b4e74;
+      backdrop-filter: blur(10px);
+      color: #dbeeff;
+      padding: 16px 26px;
+      border-radius: 50px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 1.05rem;
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.2px;
+      box-shadow: 0 8px 18px -8px #00000080, inset 0 1px 1px #ffffff0d;
+      transition: all 0.2s;
+      border-left: 6px solid #f59e0b;
+      border-right: 6px solid #b17aff;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #1f3f64;
+      border: 1px solid #3e6a9e;
+      color: #eef6ff;
+      padding: 12px 28px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 6px 0 #0b1625, 0 8px 16px -6px black;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: #2b5282;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 #0b1625, 0 12px 20px -6px black;
+    }
+
+    button:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #0b1625;
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 #0b1625;
+      pointer-events: none;
+      filter: grayscale(0.7);
+    }
+
+    .btn-reset {
+      background: #3f2b48;
+      border-color: #995d99;
+    }
+
+    .btn-reset:hover {
+      background: #5e3a6b;
+    }
+
+    /* legend row */
+    .legend {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 18px;
+      font-size: 0.8rem;
+      color: #9fb8d6;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+    }
+
+    .swatch-orange { background: #f59e0b; box-shadow: 0 0 10px #fbbf24; }
+    .swatch-purple { background: #b17aff; box-shadow: 0 0 10px #c084fc; }
+
+    /* scroll */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0a111c; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #2d4b70; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>minesweeper DFS</h1>
+  <div class="subtitle">deep‑dive · stack & call trace visualizer</div>
+
+  <div class="status-box" id="statusMsg">ready · click on [0,3] will start the cascade</div>
+
+  <div class="dashboard">
+    <!-- STACK VISUALIZATION PANEL -->
+    <div class="panel stack-panel">
+      <div class="panel-header">
+        📚 call stack
+        <span id="stackDepth">0</span>
+      </div>
+      <div class="stack-container" id="stackContainer">
+        <!-- dynamically filled -->
+        <div class="stack-empty">— empty —</div>
+      </div>
+    </div>
+
+    <!-- GRID PANEL -->
+    <div class="panel grid-panel">
+      <div class="panel-header">
+        🧩 matrix state
+        <span>4x4</span>
+      </div>
+      <div class="grid-container">
+        <div class="grid" id="boardGrid"></div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch swatch-orange"></div> current dfs(r,c)</div>
+        <div class="legend-item"><div class="legend-swatch swatch-purple"></div> scanning neighbors</div>
+      </div>
+    </div>
+
+    <!-- CODE PANEL -->
+    <div class="panel code-panel">
+      <div class="panel-header">
+        📜 code trace
+        <span>dfs</span>
+      </div>
+      <div class="code-block">
+        <div class="code-line" id="line-1">function dfs(r, c) {</div>
+        <div class="code-line" id="line-2">  if (r<0 || r>=R || c<0 || c>=C || board[r][c] !== 'E') {</div>
+        <div class="code-line" id="line-3">    return;</div>
+        <div class="code-line" id="line-4">  }</div>
+        <div class="code-line" id="line-5">  let mines = 0;</div>
+        <div class="code-line" id="line-6">  for (const [dr, dc] of dirs) {</div>
+        <div class="code-line" id="line-7">    if (board[r+dr][c+dc] === 'M') mines++;</div>
+        <div class="code-line" id="line-8">  }</div>
+        <div class="code-line" id="line-9">  if (mines > 0) {</div>
+        <div class="code-line" id="line-10">    board[r][c] = mines.toString();</div>
+        <div class="code-line" id="line-11">  } else {</div>
+        <div class="code-line" id="line-12">    board[r][c] = 'B';</div>
+        <div class="code-line" id="line-13">    for (const [dr, dc] of dirs) {</div>
+        <div class="code-line" id="line-14">      dfs(r + dr, c + dc);</div>
+        <div class="code-line" id="line-15">    }</div>
+        <div class="code-line" id="line-16">  }</div>
+        <div class="code-line" id="line-17">}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="btnPrev" onclick="step(-1)">← previous</button>
+    <button id="btnNext" onclick="step(1)">next step →</button>
+    <button class="btn-reset" onclick="reset()">⟲ reset</button>
+  </div>
+
+<script>
+  // ---------- CONFIGURATION ----------
+  const INITIAL_BOARD = [
+    ['E', 'E', 'E', 'E'],
+    ['E', 'M', 'E', 'E'],
+    ['E', 'E', 'M', 'E'],
+    ['E', 'E', 'E', 'E']
+  ];
+  const START_CLICK = [0, 3];   // top-right
+  const dirs = [[1,0], [-1,0], [0,1], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]];
+
+  // ---------- GLOBAL STATE ----------
+  let steps = [];
+  let currentStep = 0;
+  // stack frames for visualization (will be attached to each step)
+  // Each step gets a `stack` array of { r, c, depth } 
+
+  // ---------- UTILS ----------
+  function cloneBoard(b) {
+    return b.map(row => [...row]);
+  }
+
+  // ---------- GENERATE ALL STEPS WITH STACK SNAPSHOTS ----------
+  function generateSteps() {
+    steps = [];
+    let board = cloneBoard(INITIAL_BOARD);
+    const ROWS = board.length;
+    const COLS = board[0].length;
+
+    // manual stack simulation to keep track of depth and frames
+    // we'll push/pop and record snapshots
+    let callStack = []; // array of { r, c, depth }
+
+    // initial empty state
+    steps.push({
+      line: 0,
+      board: cloneBoard(board),
+      active: null,
+      scanning: [],
+      msg: `▶ Starting: user clicks [${START_CLICK[0]}, ${START_CLICK[1]}].`,
+      stack: []
+    });
+
+    function dfs(r, c, depth = 0) {
+      // ----- push to stack (simulate entering function) -----
+      callStack.push({ r, c, depth });
+      
+      // step: function entry
+      steps.push({
+        line: 1,
+        board: cloneBoard(board),
+        active: [r, c],
+        scanning: [],
+        msg: `dfs(${r}, ${c}) called · depth ${depth}`,
+        stack: callStack.map(f => ({ ...f })) // deep copy
+      });
+
+      // ----- base case / out of bounds -----
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS || board[r][c] !== 'E') {
+        steps.push({
+          line: 2,
+          board: cloneBoard(board),
+          active: [r, c],
+          scanning: [],
+          msg: `dfs(${r}, ${c}) — out of bounds or already revealed. return.`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+        callStack.pop(); // pop before return
+        return;
+      }
+
+      // ----- collect valid neighbors for scanning -----
+      let scanningArr = [];
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+          scanningArr.push([nr, nc]);
+        }
+      }
+
+      // step: entering neighbor scan (line 6)
+      steps.push({
+        line: 6,
+        board: cloneBoard(board),
+        active: [r, c],
+        scanning: scanningArr,
+        msg: `dfs(${r}, ${c}) — radar checking 8 neighbors...`,
+        stack: callStack.map(f => ({ ...f }))
+      });
+
+      // count mines
+      let mines = 0;
+      for (const [nr, nc] of scanningArr) {
+        if (board[nr][nc] === 'M') mines++;
+      }
+
+      if (mines > 0) {
+        // line 9
+        steps.push({
+          line: 9,
+          board: cloneBoard(board),
+          active: [r, c],
+          scanning: [],
+          msg: `dfs(${r}, ${c}) — detected ${mines} adjacent mine(s). stop recursion.`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+        board[r][c] = mines.toString();
+        // line 10
+        steps.push({
+          line: 10,
+          board: cloneBoard(board),
+          active: [r, c],
+          scanning: [],
+          msg: `dfs(${r}, ${c}) — board updated to '${mines}'.`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+      } else {
+        // line 11
+        steps.push({
+          line: 11,
+          board: cloneBoard(board),
+          active: [r, c],
+          scanning: [],
+          msg: `dfs(${r}, ${c}) — safe! 0 adjacent mines.`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+        board[r][c] = 'B';
+        // line 12
+        steps.push({
+          line: 12,
+          board: cloneBoard(board),
+          active: [r, c],
+          scanning: [],
+          msg: `dfs(${r}, ${c}) — board updated to 'B' (blank).`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+
+        // line 13 (about to recurse)
+        steps.push({
+          line: 13,
+          board: cloneBoard(board),
+          active: [r, c],
+          scanning: [],
+          msg: `dfs(${r}, ${c}) — recursing on all 8 neighbors.`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+
+        // iterate over dirs in order
+        for (const [dr, dc] of dirs) {
+          dfs(r + dr, c + dc, depth + 1);
+        }
+      }
+
+      // ----- pop from stack (function exit) -----
+      callStack.pop();
+
+      // after returning, we can optionally show a step (but not necessary)
+      // we will add one small step to indicate frame removal (visual clarity)
+      // but only if there are remaining steps? Actually we don't want too many steps.
+      // we can add a subtle "return" step only if callStack is not empty after pop.
+      // But we already have the 'return' for base case.
+      // For non-base, we can add a pop indicator if stack not empty.
+      if (callStack.length > 0) {
+        // find parent coordinates
+        const parent = callStack[callStack.length - 1];
+        steps.push({
+          line: 17, // closing brace
+          board: cloneBoard(board),
+          active: parent ? [parent.r, parent.c] : null,
+          scanning: [],
+          msg: `dfs(${r}, ${c}) returned · back to dfs(${parent.r}, ${parent.c})`,
+          stack: callStack.map(f => ({ ...f }))
+        });
+      } else {
+        // last frame pop — final step after everything
+        steps.push({
+          line: 17,
+          board: cloneBoard(board),
+          active: null,
+          scanning: [],
+          msg: `dfs(${r}, ${c}) returned · stack empty. cascade complete.`,
+          stack: []
+        });
+      }
+    }
+
+    // start DFS from the click
+    dfs(START_CLICK[0], START_CLICK[1], 0);
+
+    // ensure final step has empty stack & no active
+    // (the last step might already be that, but just in case)
+    const last = steps[steps.length - 1];
+    if (last.stack.length > 0 || last.active !== null) {
+      steps.push({
+        line: 17,
+        board: cloneBoard(board),
+        active: null,
+        scanning: [],
+        msg: `✅ DFS cascade complete! target revealed.`,
+        stack: []
+      });
+    }
+  }
+
+  // ---------- RENDER ----------
+  function render() {
+    const s = steps[currentStep];
+    
+    // 1. status message
+    document.getElementById('statusMsg').textContent = s.msg;
+
+    // 2. highlight code line
+    for (let i = 1; i <= 17; i++) {
+      const el = document.getElementById(`line-${i}`);
+      if (el) el.classList.toggle('active', i === s.line);
+    }
+
+    // 3. render grid
+    const gridDiv = document.getElementById('boardGrid');
+    gridDiv.style.gridTemplateColumns = `repeat(${s.board[0].length}, 62px)`;
+    gridDiv.innerHTML = '';
+
+    for (let r = 0; r < s.board.length; r++) {
+      for (let c = 0; c < s.board[0].length; c++) {
+        const val = s.board[r][c];
+        const cell = document.createElement('div');
+        
+        if (val === 'E' || val === 'M' || val === 'B') {
+          cell.className = `cell cell-${val}`;
+        } else {
+          cell.className = `cell cell-num num-${val}`;
+        }
+        cell.textContent = val;
+
+        // active target highlight
+        if (s.active && s.active[0] === r && s.active[1] === c) {
+          cell.classList.add('active-target');
+        }
+        // scanning highlight
+        if (s.scanning.some(pos => pos[0] === r && pos[1] === c)) {
+          cell.classList.add('active-scan');
+        }
+
+        gridDiv.appendChild(cell);
+      }
+    }
+
+    // 4. render stack
+    const stackContainer = document.getElementById('stackContainer');
+    const stack = s.stack || [];
+    document.getElementById('stackDepth').textContent = stack.length;
+
+    if (stack.length === 0) {
+      stackContainer.innerHTML = '<div class="stack-empty">— empty —</div>';
+    } else {
+      stackContainer.innerHTML = '';
+      // we want top of stack at the top (visually), so reverse order
+      // stack array: index 0 = oldest, last = newest (top)
+      // display newest first (reverse)
+      [...stack].reverse().forEach((frame, idx) => {
+        const frameEl = document.createElement('div');
+        frameEl.className = 'stack-frame';
+        // show depth (actual depth stored)
+        frameEl.innerHTML = `
+          <span class="coord">(${frame.r}, ${frame.c})</span>
+          <span class="depth">d${frame.depth}</span>
+        `;
+        stackContainer.appendChild(frameEl);
+      });
+    }
+
+    // 5. buttons
+    document.getElementById('btnPrev').disabled = currentStep === 0;
+    document.getElementById('btnNext').disabled = currentStep === steps.length - 1;
+  }
+
+  // ---------- CONTROLS ----------
+  function step(dir) {
+    currentStep += dir;
+    if (currentStep < 0) currentStep = 0;
+    if (currentStep >= steps.length) currentStep = steps.length - 1;
+    render();
+  }
+
+  function reset() {
+    currentStep = 0;
+    render();
+  }
+
+  // ---------- INIT ----------
+  generateSteps();
+  // ensure we start at step 0 (already set)
+  render();
+  // expose to global for onclick
+  window.step = step;
+  window.reset = reset;
+</script>
+</body>
+</html>

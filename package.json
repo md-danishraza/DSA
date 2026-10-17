@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build":"tsc",
-    "start":"tsc && node ./typescript/dist/BFS/08_theMaze.js"
+    "start":"tsc && node ./typescript/dist/BFS/10_theMazeThree.js"
     
   },
   "keywords": [],
